@@ -303,36 +303,12 @@ var domainJoinProtectedSettings = {
   Password: domainJoinPassword
 }
 
-var builtInRoleNames = {
-  'Owner': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
-  'Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-  'Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
-  'Avere Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4f8fab4f-1852-4a58-a46a-8eaf358af14a')
-  'Avere Operator': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'c025889f-8102-4ebf-b32c-fc0c6f0c6bd9')
-  'DevTest Labs User': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '76283e04-6283-4c54-8f91-bcf1374a3c64')
-  'Log Analytics Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '92aaf0da-9dab-42b6-94a3-d43ce8d16293')
-  'Log Analytics Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '73c42c96-874c-492b-b04d-ab87d138a893')
-  'Managed Application Contributor Role': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '641177b8-a67a-45b9-a033-47bc880bb21e')
-  'Managed Application Operator Role': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'c7393b34-138c-406f-901b-d8cf2b17e6ae')
-  'Managed Applications Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b9331d33-8a36-4f8c-b097-4f54124fdb44')
-  'Microsoft OneAsset Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fd1bb084-1503-4bd2-99c0-630220046786')
-  'Monitoring Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '749f88d5-cbae-40b8-bcfc-e573ddc772fa')
-  'Monitoring Metrics Publisher': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '3913510d-42f4-4e42-8a64-420c390055eb')
-  'Monitoring Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '43d0d8ad-25c7-4714-9337-8ba259a9fe05')
-  'Reservation Purchaser': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f7b75c60-3036-4b75-91c3-6b41c27c1689')
-  'Resource Policy Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '36243c78-bf99-498c-9df9-86d9f8d28608')
-  'User Access Administrator': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '18d7d88d-d35e-4fb5-a5c3-7773c20a72d9')
-  'Virtual Machine Administrator Login': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '1c0163c0-47e6-4577-8991-ea5c82e286e4')
-  'Virtual Machine Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')
-  'Virtual Machine User Login': subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fb879df8-f326-4884-b1cf-06f3ad86be52')
-}
-
-module pid_cuaId './.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
+module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
   name: 'pid-${cuaId}'
   params: {}
 }
 
-module virtualMachine_nic './.bicep/nested_networkInterface.bicep' = [for (nicConfiguration, index) in nicConfigurations: {
+module virtualMachine_nic '.bicep/nested_networkInterface.bicep' = [for (nicConfiguration, index) in nicConfigurations: {
   name: '${deployment().name}-nic-${index}'
   params: {
     networkInterfaceName: '${virtualMachineName}${nicConfiguration.nicSuffix}'
@@ -353,7 +329,6 @@ module virtualMachine_nic './.bicep/nested_networkInterface.bicep' = [for (nicCo
     metricsToEnable: nicMetricsToEnable
     pipMetricsToEnable: pipMetricsToEnable
     pipLogsToEnable: pipLogsToEnable
-    builtInRoleNames: builtInRoleNames
     roleAssignments: (contains(nicConfiguration, 'roleAssignments') ? (!(empty(nicConfiguration.roleAssignments)) ? nicConfiguration.roleAssignments : json('[]')) : json('[]'))
   }
 }]
@@ -433,7 +408,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-04-01' = {
   ]
 }
 
-module virtualMachine_domainJoinExtension './.bicep/nested_extension.bicep' = if (enableDomainJoinExtension) {
+module virtualMachine_domainJoinExtension '.bicep/nested_extension.bicep' = if (enableDomainJoinExtension) {
   name: '${deployment().name}-DomainJoin'
   params: {
     virtualMachineName: virtualMachine.name
@@ -448,7 +423,7 @@ module virtualMachine_domainJoinExtension './.bicep/nested_extension.bicep' = if
   }
 }
 
-module virtualMachine_microsoftAntiMalwareExtension './.bicep/nested_extension.bicep' = if (enableMicrosoftAntiMalware) {
+module virtualMachine_microsoftAntiMalwareExtension '.bicep/nested_extension.bicep' = if (enableMicrosoftAntiMalware) {
   name: '${deployment().name}-MicrosoftAntiMalware'
   params: {
     virtualMachineName: virtualMachine.name
@@ -467,7 +442,7 @@ resource virtualMachine_logAnalyticsWorkspace 'Microsoft.OperationalInsights/wor
   scope: resourceGroup(split(workspaceId, '/')[2], split(workspaceId, '/')[4])
 }
 
-module virtualMachine_microsoftMonitoringAgentExtension './.bicep/nested_extension.bicep' = if (enableWindowsMMAAgent || enableLinuxMMAAgent) {
+module virtualMachine_microsoftMonitoringAgentExtension '.bicep/nested_extension.bicep' = if (enableWindowsMMAAgent || enableLinuxMMAAgent) {
   name: '${deployment().name}-MicrosoftMonitoringAgent'
   params: {
     virtualMachineName: virtualMachine.name
@@ -478,15 +453,15 @@ module virtualMachine_microsoftMonitoringAgentExtension './.bicep/nested_extensi
     typeHandlerVersion: enableWindowsMMAAgent ? '1.0' : '1.7'
     autoUpgradeMinorVersion: true
     settings: {
-      workspaceId: reference(virtualMachine_logAnalyticsWorkspace.id, virtualMachine_logAnalyticsWorkspace.apiVersion).customerId
+      workspaceId: (!empty(workspaceId)) ? reference(virtualMachine_logAnalyticsWorkspace.id, virtualMachine_logAnalyticsWorkspace.apiVersion).customerId : ''
     }
     protectedSettings: {
-      workspaceKey: virtualMachine_logAnalyticsWorkspace.listKeys().primarySharedKey
+      workspaceKey: (!empty(workspaceId)) ? virtualMachine_logAnalyticsWorkspace.listKeys().primarySharedKey : ''
     }
   }
 }
 
-module virtualMachine_dependencyAgentExtension './.bicep/nested_extension.bicep' = if (enableWindowsDependencyAgent || enableLinuxDependencyAgent) {
+module virtualMachine_dependencyAgentExtension '.bicep/nested_extension.bicep' = if (enableWindowsDependencyAgent || enableLinuxDependencyAgent) {
   name: '${deployment().name}-DependencyAgent'
   params: {
     virtualMachineName: virtualMachine.name
@@ -499,7 +474,7 @@ module virtualMachine_dependencyAgentExtension './.bicep/nested_extension.bicep'
   }
 }
 
-module virtualMachine_networkWatcherAgentExtension './.bicep/nested_extension.bicep' = if (enableNetworkWatcherWindows || enableNetworkWatcherLinux) {
+module virtualMachine_networkWatcherAgentExtension '.bicep/nested_extension.bicep' = if (enableNetworkWatcherWindows || enableNetworkWatcherLinux) {
   name: '${deployment().name}-NetworkWatcherAgent'
   params: {
     virtualMachineName: virtualMachine.name
@@ -512,7 +487,7 @@ module virtualMachine_networkWatcherAgentExtension './.bicep/nested_extension.bi
   }
 }
 
-module virtualMachine_diskEncryptionExtension './.bicep/nested_extension.bicep' = if (enableWindowsDiskEncryption || enableLinuxDiskEncryption) {
+module virtualMachine_diskEncryptionExtension '.bicep/nested_extension.bicep' = if (enableWindowsDiskEncryption || enableLinuxDiskEncryption) {
   name: '${deployment().name}-DiskEncryption'
   params: {
     virtualMachineName: virtualMachine.name
@@ -527,7 +502,7 @@ module virtualMachine_diskEncryptionExtension './.bicep/nested_extension.bicep' 
   }
 }
 
-module virtualMachine_desiredStateConfigurationExtension './.bicep/nested_extension.bicep' = if (enableDesiredStateConfiguration) {
+module virtualMachine_desiredStateConfigurationExtension '.bicep/nested_extension.bicep' = if (enableDesiredStateConfiguration) {
   name: '${deployment().name}-DesiredStateConfiguration'
   params: {
     virtualMachineName: virtualMachine.name
@@ -542,7 +517,7 @@ module virtualMachine_desiredStateConfigurationExtension './.bicep/nested_extens
   }
 }
 
-module virtualMachine_customScriptExtension './.bicep/nested_extension.bicep' = if (enableCustomScriptExtension) {
+module virtualMachine_customScriptExtension '.bicep/nested_extension.bicep' = if (enableCustomScriptExtension) {
   name: '${deployment().name}-CustomScriptExtension'
   params: {
     virtualMachineName: virtualMachine.name
@@ -564,7 +539,7 @@ module virtualMachine_customScriptExtension './.bicep/nested_extension.bicep' = 
   }
 }
 
-module virtualMachine_backup './.bicep/nested_backup.bicep' = if (!empty(backupVaultName)) {
+module virtualMachine_backup '.bicep/nested_backup.bicep' = if (!empty(backupVaultName)) {
   name: '${deployment().name}-backup'
   params: {
     backupResourceName: '${backupVaultName}/Azure/iaasvmcontainer;iaasvmcontainerv2;${resourceGroup().name};${virtualMachine.name}/vm;iaasvmcontainerv2;${resourceGroup().name};${virtualMachine.name}'
@@ -594,11 +569,10 @@ resource virtualMachine_lock 'Microsoft.Authorization/locks@2017-04-01' = if (lo
   scope: virtualMachine
 }
 
-module virtualMachine_rbac './.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
+module virtualMachine_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
   name: '${deployment().name}-rbac-${index}'
   params: {
     roleAssignmentObj: roleAssignment
-    builtInRoleNames: builtInRoleNames
     resourceName: virtualMachine.name
   }
 }]

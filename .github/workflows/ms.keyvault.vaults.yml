@@ -6,7 +6,7 @@ on:
       removeDeployment:
         description: 'Remove deployed module'
         required: false
-        default: 'false'
+        default: 'false' # Soft-delete prevents re-deployment
       versioningOption:
         description: 'The mode to handle the version increments [major|minor|patch|custom]'
         required: false
@@ -97,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        parameterFilePaths: ['parameters.json']
+        parameterFilePaths: ['min.parameters.json', 'parameters.json']
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2
@@ -132,7 +132,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        parameterFilePaths: ['parameters.json']
+        parameterFilePaths: ['min.parameters.json', 'parameters.json']
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v2

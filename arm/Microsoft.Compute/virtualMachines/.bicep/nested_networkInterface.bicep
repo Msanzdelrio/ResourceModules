@@ -16,7 +16,6 @@ param eventHubName string
 param pipMetricsToEnable array
 param pipLogsToEnable array
 param metricsToEnable array
-param builtInRoleNames object
 param roleAssignments array
 
 var diagnosticsMetrics = [for metric in metricsToEnable: {
@@ -37,7 +36,7 @@ var networkSecurityGroup = {
   id: networkSecurityGroupId
 }
 
-module networkInterface_publicIPConfigurations './nested_networkInterface_publicIPAddress.bicep' = [for (ipConfiguration, index) in ipConfigurationArray: if (contains(ipConfiguration, 'pipconfiguration')) {
+module networkInterface_publicIPConfigurations 'nested_networkInterface_publicIPAddress.bicep' = [for (ipConfiguration, index) in ipConfigurationArray: if (contains(ipConfiguration, 'pipconfiguration')) {
   name: '${deployment().name}-pip-${index}'
   params: {
     publicIPAddressName: '${virtualMachineName}${ipConfiguration.pipconfiguration.publicIpNameSuffix}'
@@ -54,7 +53,6 @@ module networkInterface_publicIPConfigurations './nested_networkInterface_public
     metricsToEnable: pipMetricsToEnable
     logsToEnable: pipLogsToEnable
     lock: lock
-    builtInRoleNames: builtInRoleNames
     roleAssignments: (contains(ipConfiguration.pipconfiguration, 'roleAssignments') ? (!(empty(ipConfiguration.pipconfiguration.roleAssignments)) ? ipConfiguration.pipconfiguration.roleAssignments : json('[]')) : json('[]'))
     tags: tags
   }
@@ -108,11 +106,10 @@ resource networkInterface_diagnosticSettings 'Microsoft.Insights/diagnosticsetti
   scope: networkInterface
 }
 
-module networkInterface_rbac './nested_networkInterface_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
+module networkInterface_rbac 'nested_networkInterface_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
   name: '${deployment().name}-rbac-${index}'
   params: {
     roleAssignmentObj: roleAssignment
-    builtInRoleNames: builtInRoleNames
     resourceName: networkInterface.name
   }
 }]
