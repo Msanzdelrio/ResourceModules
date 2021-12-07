@@ -31,20 +31,18 @@ jobs:
           pwsh: true
           script: |
             # Load used functions
-            Write-Verbose $(System.DefaultWorkingDirectory) -Verbose
-            Write-Verbose $(Build.Repository.Name) -Verbose
-            # . (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'tools' 'Set-GitHubReadMeModuleTable.ps1')
+            . (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'tools' 'Set-GitHubReadMeModuleTable.ps1')
 
-            # $functionInput = @{
-            #   ModulesPath    = Join-Path '$(System.DefaultWorkingDirectory)' 'arm'
-            #   FilePath       = Join-Path '$(System.DefaultWorkingDirectory)' 'README.md'
-            #   Organization   = ($(Build.Repository.Name)).split('/')[0]
-            #   RepositoryName = '$(Build.Repository.Name)'
-            #   ColumnsInOrder = @('Name', 'Status')
-            #   SortByColumn   = 'Name'
-            # }
+            $functionInput = @{
+              ModulesPath    = Join-Path '$(System.DefaultWorkingDirectory)' 'arm'
+              FilePath       = Join-Path '$(System.DefaultWorkingDirectory)' 'README.md'
+              Organization   = ($(Build.Repository.Name)).split('/')[0]
+              RepositoryName = ($(Build.Repository.Name)).split('/')[1]
+              ColumnsInOrder = @('Name', 'Status')
+              SortByColumn   = 'Name'
+            }
 
-            # Write-Verbose "Invoke task with" -Verbose
-            # Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
+            Write-Verbose "Invoke task with" -Verbose
+            Write-Verbose ($functionInput | ConvertTo-Json | Out-String) -Verbose
 
-            # Set-GitHubReadMeModuleTable @functionInput -Verbose
+            Set-GitHubReadMeModuleTable @functionInput -Verbose
