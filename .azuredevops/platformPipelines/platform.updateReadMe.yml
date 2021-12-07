@@ -76,8 +76,8 @@ jobs:
             git config --global user.email '$(pipelinePrincipalGitUserEmail)'
             git config --global user.name '$(pipelinePrincipalGitUserName)'
             Write-Verbose '$(Build.SourceBranch)' -Verbose
-            git checkout -t origin/$(Build.SourceBranch);
-            git pull
-            git add .
-            git commit -m "Push updated Readme file(s)"
-            git push
+            # git checkout -t origin/$(Build.SourceBranch);
+            # git pull
+            # git add .
+            # git commit -m "Push updated Readme file(s)"
+            # git push
