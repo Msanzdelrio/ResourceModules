@@ -31,8 +31,8 @@ jobs:
           pwsh: true
           script: |
             # Load used functions
-            Write-Verbose $(System.DefaultWorkingDirectory)
-            Write-Verbose $(Build.Repository.Name)
+            Write-Verbose $(System.DefaultWorkingDirectory) -Verbose
+            Write-Verbose $(Build.Repository.Name) -Verbose
             # . (Join-Path '$(System.DefaultWorkingDirectory)' 'utilities' 'tools' 'Set-GitHubReadMeModuleTable.ps1')
 
             # $functionInput = @{
