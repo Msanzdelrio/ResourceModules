@@ -18,9 +18,9 @@ variables:
 jobs:
   - job: Update_module_tables
     pool:
-      ${{ if ne($(vmImage), '') }}:
+      ${{ if ne('$(vmImage)', '') }}:
         vmImage: '$(vmImage)'
-      ${{ if ne($(poolName), '') }}:
+      ${{ if ne('$(poolName)', '') }}:
         name: '$(poolName)'
     steps:
       - checkout: self
