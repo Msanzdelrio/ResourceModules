@@ -8,9 +8,9 @@ param connectionApi object = {}
 param connectionKind string
 
 @description('Required. Connection name for connection. Example: \'azureblob\' when using blobs.  It can change depending on the resource.')
-param connectionName string
+param name string
 
-@description('Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered.')
+@description('Optional. Customer Usage Attribution ID (GUID). This GUID must be previously registered.')
 param cuaId string = ''
 
 @description('Optional. Customized parameter values for specific connections.')
@@ -58,20 +58,20 @@ module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
 }
 
 resource connection 'Microsoft.Web/connections@2016-06-01' = {
-  name: connectionName
+  name: name
   location: location
   kind: connectionKind
   tags: tags
   properties: {
     displayName: displayName
     customParameterValues: customParameterValues
-    parameterValueType: ((!empty(parameterValueType)) ? parameterValueType : json('null'))
-    alternativeParameterValues: ((!empty(alternativeParameterValues)) ? alternativeParameterValues : json('null'))
+    parameterValueType: !empty(parameterValueType) ? parameterValueType : null
+    alternativeParameterValues: !empty(alternativeParameterValues) ? alternativeParameterValues : null
     api: connectionApi
-    parameterValues: (empty(alternativeParameterValues) ? parameterValues : json('null'))
-    nonSecretParameterValues: ((!empty(nonSecretParameterValues)) ? nonSecretParameterValues : json('null'))
-    testLinks: ((!empty(testLinks)) ? testLinks : json('null'))
-    statuses: ((!empty(statuses)) ? statuses : json('null'))
+    parameterValues: empty(alternativeParameterValues) ? parameterValues : null
+    nonSecretParameterValues: !empty(nonSecretParameterValues) ? nonSecretParameterValues : null
+    testLinks: !empty(testLinks) ? testLinks : null
+    statuses: !empty(statuses) ? statuses : null
   }
 }
 
@@ -79,19 +79,25 @@ resource connection_lock 'Microsoft.Authorization/locks@2016-09-01' = if (lock !
   name: '${connection.name}-${lock}-lock'
   properties: {
     level: lock
-    notes: (lock == 'CanNotDelete') ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
+    notes: lock == 'CanNotDelete' ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
   }
   scope: connection
 }
 
 module connection_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${deployment().name}-rbac-${index}'
+  name: '${uniqueString(deployment().name, location)}-Connection-Rbac-${index}'
   params: {
-    roleAssignmentObj: roleAssignment
-    resourceName: connection.name
+    principalIds: roleAssignment.principalIds
+    roleDefinitionIdOrName: roleAssignment.roleDefinitionIdOrName
+    resourceId: connection.id
   }
 }]
 
+@description('The resource ID of the connection')
 output connectionResourceId string = connection.id
+
+@description('The resource group the connection was deployed into')
 output connectionResourceGroup string = resourceGroup().name
+
+@description('The name of the connection')
 output connectionName string = connection.name

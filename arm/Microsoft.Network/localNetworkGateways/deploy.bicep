@@ -1,6 +1,6 @@
 @description('Required. Name of the Local Network Gateway')
 @minLength(1)
-param localNetworkGatewayName string
+param name string
 
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
@@ -34,7 +34,7 @@ param roleAssignments array = []
 @description('Optional. Tags of the resource.')
 param tags object = {}
 
-@description('Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered')
+@description('Optional. Customer Usage Attribution ID (GUID). This GUID must be previously registered')
 param cuaId string = ''
 
 @description('Optional. FQDN of local network gateway.')
@@ -43,7 +43,7 @@ param fqdn string = ''
 var bgpSettings = {
   asn: localAsn
   bgpPeeringAddress: localBgpPeeringAddress
-  peerWeight: (empty(localPeerWeight) ? '0' : localPeerWeight)
+  peerWeight: !empty(localPeerWeight) ? localPeerWeight : '0'
 }
 
 module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
@@ -52,16 +52,16 @@ module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
 }
 
 resource localNetworkGateway 'Microsoft.Network/localNetworkGateways@2021-02-01' = {
-  name: localNetworkGatewayName
+  name: name
   location: location
   tags: tags
   properties: {
     localNetworkAddressSpace: {
       addressPrefixes: localAddressPrefixes
     }
-    fqdn: ((!empty(fqdn)) ? json('null') : fqdn)
+    fqdn: !empty(fqdn) ? fqdn : null
     gatewayIpAddress: localGatewayPublicIpAddress
-    bgpSettings: (((!empty(localAsn)) && (!empty(localBgpPeeringAddress))) ? bgpSettings : json('null'))
+    bgpSettings: !empty(localAsn) && !empty(localBgpPeeringAddress) ? bgpSettings : null
   }
 }
 
@@ -69,19 +69,25 @@ resource localNetworkGateway_lock 'Microsoft.Authorization/locks@2016-09-01' = i
   name: '${localNetworkGateway.name}-${lock}-lock'
   properties: {
     level: lock
-    notes: (lock == 'CanNotDelete') ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
+    notes: lock == 'CanNotDelete' ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
   }
   scope: localNetworkGateway
 }
 
 module localNetworkGateway_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${deployment().name}-rbac-${index}'
+  name: '${uniqueString(deployment().name, location)}-LocalNetworkGateway-Rbac-${index}'
   params: {
-    roleAssignmentObj: roleAssignment
-    resourceName: localNetworkGateway.name
+    principalIds: roleAssignment.principalIds
+    roleDefinitionIdOrName: roleAssignment.roleDefinitionIdOrName
+    resourceId: localNetworkGateway.id
   }
 }]
 
+@description('The resource ID of the local network gateway')
 output localNetworkGatewayResourceId string = localNetworkGateway.id
+
+@description('The resource group the local network gateway was deployed into')
 output localNetworkGatewayResourceGroup string = resourceGroup().name
+
+@description('The name of the local network gateway')
 output localNetworkGatewayName string = localNetworkGateway.name

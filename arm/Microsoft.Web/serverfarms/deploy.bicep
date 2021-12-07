@@ -1,7 +1,7 @@
-@description('Required. The Name of the App Service Plan to deploy.')
+@description('Required. The name of the app service plan to deploy.')
 @minLength(1)
 @maxLength(40)
-param appServicePlanName string
+param name string
 
 @description('Required. Defines the name, tier, size, family and capacity of the App Service Plan.')
 param sku object
@@ -16,7 +16,7 @@ param location string = resourceGroup().location
 ])
 param serverOS string = 'Windows'
 
-@description('Optional. The Resource Id of the App Service Environment to use for the App Service Plan.')
+@description('Optional. The Resource ID of the App Service Environment to use for the App Service Plan.')
 param appServiceEnvironmentId string = ''
 
 @description('Optional. Target worker tier assigned to the App Service plan.')
@@ -53,7 +53,7 @@ param roleAssignments array = []
 @description('Optional. Tags of the resource.')
 param tags object = {}
 
-@description('Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered')
+@description('Optional. Customer Usage Attribution ID (GUID). This GUID must be previously registered')
 param cuaId string = ''
 
 var hostingEnvironmentProfile = {
@@ -66,17 +66,17 @@ module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
 }
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: appServicePlanName
-  kind: ((serverOS == 'Windows') ? '' : 'linux')
+  name: name
+  kind: serverOS == 'Windows' ? '' : 'linux'
   location: location
   tags: tags
   sku: sku
   properties: {
     workerTierName: workerTierName
-    hostingEnvironmentProfile: (empty(appServiceEnvironmentId) ? json('null') : hostingEnvironmentProfile)
+    hostingEnvironmentProfile: !empty(appServiceEnvironmentId) ? hostingEnvironmentProfile : null
     perSiteScaling: perSiteScaling
     maximumElasticWorkerCount: maximumElasticWorkerCount
-    reserved: (serverOS == 'Linux')
+    reserved: serverOS == 'Linux'
     targetWorkerCount: targetWorkerCount
     targetWorkerSizeId: targetWorkerSize
   }
@@ -86,19 +86,25 @@ resource appServicePlan_lock 'Microsoft.Authorization/locks@2016-09-01' = if (lo
   name: '${appServicePlan.name}-${lock}-lock'
   properties: {
     level: lock
-    notes: (lock == 'CanNotDelete') ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
+    notes: lock == 'CanNotDelete' ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
   }
   scope: appServicePlan
 }
 
 module appServicePlan_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${deployment().name}-rbac-${index}'
+  name: '${uniqueString(deployment().name, location)}-AppServicePlan-Rbac-${index}'
   params: {
-    roleAssignmentObj: roleAssignment
-    resourceName: appServicePlan.name
+    principalIds: roleAssignment.principalIds
+    roleDefinitionIdOrName: roleAssignment.roleDefinitionIdOrName
+    resourceId: appServicePlan.id
   }
 }]
 
+@description('The resource group the app service plan was deployed into')
 output appServicePlanResourceGroup string = resourceGroup().name
+
+@description('The name of the app service plan')
 output appServicePlanName string = appServicePlan.name
+
+@description('The resource ID of the app service plan')
 output appServicePlanResourceId string = appServicePlan.id

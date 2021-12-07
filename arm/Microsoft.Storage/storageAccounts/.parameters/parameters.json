@@ -5,9 +5,6 @@
         "name": {
             "value": "sxxazsaweux001"
         },
-        "managedServiceIdentity": {
-            "value": "SystemAssigned"
-        },
         "storageAccountSku": {
             "value": "Standard_LRS"
         },
@@ -24,7 +21,7 @@
                             {
                                 "roleDefinitionIdOrName": "Reader",
                                 "principalIds": [
-                                    "cf33fea8-b30f-424f-ab73-c48d99e0b222"
+                                    "<<deploymentSpId>>"
                                 ]
                             }
                         ]
@@ -49,7 +46,7 @@
                             {
                                 "roleDefinitionIdOrName": "Reader",
                                 "principalIds": [
-                                    "cf33fea8-b30f-424f-ab73-c48d99e0b222"
+                                    "<<deploymentSpId>>"
                                 ]
                             }
                         ]
@@ -79,7 +76,7 @@
                             {
                                 "roleDefinitionIdOrName": "Reader",
                                 "principalIds": [
-                                    "cf33fea8-b30f-424f-ab73-c48d99e0b222"
+                                    "<<deploymentSpId>>"
                                 ]
                             }
                         ]
@@ -91,12 +88,20 @@
                 ]
             }
         },
+        "systemAssignedIdentity": {
+            "value": true
+        },
+        "userAssignedIdentities": {
+            "value": {
+                "/subscriptions/<<subscriptionId>>/resourcegroups/validation-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adp-sxx-az-msi-x-001": {}
+            }
+        },
         "roleAssignments": {
             "value": [
                 {
                     "roleDefinitionIdOrName": "Reader",
                     "principalIds": [
-                        "cf33fea8-b30f-424f-ab73-c48d99e0b222"
+                        "<<deploymentSpId>>"
                     ]
                 }
             ]

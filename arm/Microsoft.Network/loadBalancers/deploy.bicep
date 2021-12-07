@@ -1,5 +1,5 @@
 @description('Required. The Proximity Placement Groups Name')
-param loadBalancerName string
+param name string
 
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
@@ -32,10 +32,10 @@ param probes array
 @maxValue(365)
 param diagnosticLogsRetentionInDays int = 365
 
-@description('Optional. Resource identifier of the Diagnostic Storage Account.')
+@description('Optional. Resource ID of the diagnostic storage account.')
 param diagnosticStorageAccountId string = ''
 
-@description('Optional. Resource identifier of Log Analytics.')
+@description('Optional. Resource ID of log analytics.')
 param workspaceId string = ''
 
 @description('Optional. Resource ID of the event hub authorization rule for the Event Hubs namespace in which the event hub should be created or streamed to.')
@@ -58,7 +58,7 @@ param roleAssignments array = []
 @description('Optional. Tags of the resource.')
 param tags object = {}
 
-@description('Optional. Customer Usage Attribution id (GUID). This GUID must be previously registered')
+@description('Optional. Customer Usage Attribution ID (GUID). This GUID must be previously registered')
 param cuaId string = ''
 
 var frontendsSubnets = [for item in frontendIPConfigurations: {
@@ -75,10 +75,10 @@ var frontendsObj = {
 var frontendIPConfigurations_var = [for (frontendIPConfiguration, index) in frontendIPConfigurations: {
   name: frontendIPConfiguration.name
   properties: {
-    subnet: (empty(frontendIPConfiguration.properties.subnetId) ? json('null') : frontendsObj.subnets[index])
-    publicIPAddress: (empty(frontendIPConfiguration.properties.publicIPAddressId) ? json('null') : frontendsObj.publicIPAddresses[index])
-    privateIPAddress: (empty(frontendIPConfiguration.properties.privateIPAddress) ? json('null') : frontendIPConfiguration.properties.privateIPAddress)
-    privateIPAllocationMethod: (empty(frontendIPConfiguration.properties.subnetId) ? json('null') : (empty(frontendIPConfiguration.properties.privateIPAddress) ? 'Dynamic' : 'Static'))
+    subnet: !empty(frontendIPConfiguration.properties.subnetId) ? frontendsObj.subnets[index] : null
+    publicIPAddress: !empty(frontendIPConfiguration.properties.publicIPAddressId) ? frontendsObj.publicIPAddresses[index] : null
+    privateIPAddress: !empty(frontendIPConfiguration.properties.privateIPAddress) ? frontendIPConfiguration.properties.privateIPAddress : null
+    privateIPAllocationMethod: !empty(frontendIPConfiguration.properties.subnetId) ? (empty(frontendIPConfiguration.properties.privateIPAddress) ? 'Dynamic' : 'Static') : null
   }
 }]
 
@@ -86,20 +86,20 @@ var loadBalancingRules_var = [for loadBalancingRule in loadBalancingRules: {
   name: loadBalancingRule.name
   properties: {
     backendAddressPool: {
-      id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadBalancerName, loadBalancingRule.properties.backendAddressPoolName)
+      id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', name, loadBalancingRule.properties.backendAddressPoolName)
     }
     backendPort: loadBalancingRule.properties.backendPort
-    disableOutboundSnat: (contains(loadBalancingRule.properties, 'disableOutboundSnat') ? loadBalancingRule.properties.disableOutboundSnat : 'false')
+    disableOutboundSnat: contains(loadBalancingRule.properties, 'disableOutboundSnat') ? loadBalancingRule.properties.disableOutboundSnat : 'false'
     enableFloatingIP: loadBalancingRule.properties.enableFloatingIP
-    enableTcpReset: (contains(loadBalancingRule.properties, 'enableTcpReset') ? loadBalancingRule.properties.enableTcpReset : 'false')
+    enableTcpReset: contains(loadBalancingRule.properties, 'enableTcpReset') ? loadBalancingRule.properties.enableTcpReset : 'false'
     frontendIPConfiguration: {
-      id: resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', loadBalancerName, loadBalancingRule.properties.frontendIPConfigurationName)
+      id: resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', name, loadBalancingRule.properties.frontendIPConfigurationName)
     }
     frontendPort: loadBalancingRule.properties.frontendPort
     idleTimeoutInMinutes: loadBalancingRule.properties.idleTimeoutInMinutes
-    loadDistribution: (contains(loadBalancingRule.properties, 'loadDistribution') ? loadBalancingRule.properties.loadDistribution : 'Default')
+    loadDistribution: contains(loadBalancingRule.properties, 'loadDistribution') ? loadBalancingRule.properties.loadDistribution : 'Default'
     probe: {
-      id: '${resourceId('Microsoft.Network/loadBalancers', loadBalancerName)}/probes/${loadBalancingRule.properties.probeName}'
+      id: '${resourceId('Microsoft.Network/loadBalancers', name)}/probes/${loadBalancingRule.properties.probeName}'
     }
     protocol: loadBalancingRule.properties.protocol
   }
@@ -109,7 +109,7 @@ var probes_var = [for probe in probes: {
   name: probe.name
   properties: {
     protocol: probe.properties.protocol
-    requestPath: ((toLower(probe.properties.protocol) == 'tcp') ? json('null') : probe.properties.requestPath)
+    requestPath: toLower(probe.properties.protocol) == 'tcp' ? null : probe.properties.requestPath
     port: probe.properties.port
     intervalInSeconds: probe.properties.intervalInSeconds
     numberOfProbes: probe.properties.numberOfProbes
@@ -140,7 +140,7 @@ module pid_cuaId '.bicep/nested_cuaId.bicep' = if (!empty(cuaId)) {
 }
 
 resource loadBalancer 'Microsoft.Network/loadBalancers@2021-02-01' = {
-  name: loadBalancerName
+  name: name
   location: location
   tags: tags
   sku: {
@@ -158,31 +158,37 @@ resource loadBalancer_lock 'Microsoft.Authorization/locks@2016-09-01' = if (lock
   name: '${loadBalancer.name}-${lock}-lock'
   properties: {
     level: lock
-    notes: (lock == 'CanNotDelete') ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
+    notes: lock == 'CanNotDelete' ? 'Cannot delete resource or child resources.' : 'Cannot modify the resource or child resources.'
   }
   scope: loadBalancer
 }
 
-resource loadBalancer_diagnosticSettings 'Microsoft.Insights/diagnosticsettings@2017-05-01-preview' = if ((!empty(diagnosticStorageAccountId)) || (!empty(workspaceId)) || (!empty(eventHubAuthorizationRuleId)) || (!empty(eventHubName))) {
+resource loadBalancer_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(diagnosticStorageAccountId) || !empty(workspaceId) || !empty(eventHubAuthorizationRuleId) || !empty(eventHubName)) {
   name: '${loadBalancer.name}-diagnosticSettings'
   properties: {
-    storageAccountId: (empty(diagnosticStorageAccountId) ? json('null') : diagnosticStorageAccountId)
-    workspaceId: (empty(workspaceId) ? json('null') : workspaceId)
-    eventHubAuthorizationRuleId: (empty(eventHubAuthorizationRuleId) ? json('null') : eventHubAuthorizationRuleId)
-    eventHubName: (empty(eventHubName) ? json('null') : eventHubName)
-    metrics: ((empty(diagnosticStorageAccountId) && empty(workspaceId) && empty(eventHubAuthorizationRuleId) && empty(eventHubName)) ? json('null') : diagnosticsMetrics)
+    storageAccountId: empty(diagnosticStorageAccountId) ? null : diagnosticStorageAccountId
+    workspaceId: empty(workspaceId) ? null : workspaceId
+    eventHubAuthorizationRuleId: empty(eventHubAuthorizationRuleId) ? null : eventHubAuthorizationRuleId
+    eventHubName: empty(eventHubName) ? null : eventHubName
+    metrics: empty(diagnosticStorageAccountId) && empty(workspaceId) && empty(eventHubAuthorizationRuleId) && empty(eventHubName) ? null : diagnosticsMetrics
   }
   scope: loadBalancer
 }
 
 module loadBalancer_rbac '.bicep/nested_rbac.bicep' = [for (roleAssignment, index) in roleAssignments: {
-  name: '${deployment().name}-rbac-${index}'
+  name: '${uniqueString(deployment().name, location)}-LoadBalancer-Rbac-${index}'
   params: {
-    roleAssignmentObj: roleAssignment
-    resourceName: loadBalancer.name
+    principalIds: roleAssignment.principalIds
+    roleDefinitionIdOrName: roleAssignment.roleDefinitionIdOrName
+    resourceId: loadBalancer.id
   }
 }]
 
+@description('The name of the load balancer')
 output loadBalancerName string = loadBalancer.name
+
+@description('The resource ID of the load balancer')
 output loadBalancerResourceId string = loadBalancer.id
+
+@description('The resource group the load balancer was deployed into')
 output loadBalancerResourceGroup string = resourceGroup().name
