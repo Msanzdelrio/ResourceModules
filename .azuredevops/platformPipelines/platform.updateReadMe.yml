@@ -36,8 +36,8 @@ jobs:
             $functionInput = @{
               ModulesPath    = Join-Path '$(System.DefaultWorkingDirectory)' 'arm'
               FilePath       = Join-Path '$(System.DefaultWorkingDirectory)' 'README.md'
-              Organization   = ($(Build.Repository.Name)).split('/')[0]
-              RepositoryName = ($(Build.Repository.Name)).split('/')[1]
+              Organization   = ('$(Build.Repository.Name)').split('/')[0]
+              RepositoryName = ('$(Build.Repository.Name)').split('/')[1]
               ColumnsInOrder = @('Name', 'Status')
               SortByColumn   = 'Name'
             }
@@ -58,8 +58,8 @@ jobs:
             $functionInput = @{
               ModulesPath    = Join-Path '$(System.DefaultWorkingDirectory)' 'arm'
               FilePath       = Join-Path '$(System.DefaultWorkingDirectory)' 'arm/README.md'
-              Organization   = ($(Build.Repository.Name)).split('/')[0]
-              RepositoryName = ($(Build.Repository.Name)).split('/')[1]
+              Organization   = ('$(Build.Repository.Name)').split('/')[0]
+              RepositoryName = ('$(Build.Repository.Name)').split('/')[1]
               ColumnsInOrder = @('Name', 'ProviderNamespace','ResourceType')
             }
 
