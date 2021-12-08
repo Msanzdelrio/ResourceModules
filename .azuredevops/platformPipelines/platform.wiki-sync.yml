@@ -1,5 +1,12 @@
 name: '.Platform: Sync Docs/Wiki'
 
+resources:
+  repositories:
+    - repository: MyGitHubRepo # The name used to reference this repository in the checkout step
+      type: github
+      endpoint: github.com_Msanzdelrio
+      name: Msanzdelrio/ResourceModules.wiki
+
 trigger:
   branches:
     include:
@@ -39,6 +46,6 @@ jobs:
             $wikiRepository = '$(Build.Repository.Uri)' + '.wiki'
             Write-Verbose $wikiRepository -Verbose
             echo "##vso[task.setvariable variable=wikiRepositoryVar;isOutput=true]$wikiRepository" # remember to use double quotes
-      - checkout: $(setvarStep.wikiRepositoryVar)
+      - checkout: MyGitHubRepo
         displayName: Checkout Source Repo
         persistCredentials: true
