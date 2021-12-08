@@ -14,6 +14,8 @@ variables:
     value: 'CARMLPipelinePrincipal'
   - name: pipelinePrincipalGitUserEmail
     value: 'CARML@noreply.github.com'
+  - name: wikiRepository
+    value: '$(Build.Repository.Uri).wiki'
 
 jobs:
   - job: Update_module_tables
@@ -26,6 +28,6 @@ jobs:
       - checkout: self
         displayName: Checkout Source Repo
         persistCredentials: true
-      - checkout: '$(Build.Repository.Uri).wiki'
+      - checkout: $(wikiRepository)
         displayName: Checkout Wiki Repo
         persistCredentials: true
