@@ -37,7 +37,9 @@ jobs:
           pwsh: true
           script: |
             $wikiRepository = '$(Build.Repository.Uri)' + '.wiki'
+            Write-Verbose $wikiRepository -Verbose
             echo "##vso[task.setvariable variable=wikiRepository;isOutput=true]$wikiRepository" # remember to use double quotes
+            Write-Verbose $(myOutputVar) -Verbose
       - task: PowerShell@2
         displayName: 'Update general ReadMe'
         inputs:
