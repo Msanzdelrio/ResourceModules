@@ -5,7 +5,7 @@ resources:
     - repository: MyGitHubRepo # The name used to reference this repository in the checkout step
       type: github
       endpoint: github.com_Msanzdelrio
-      name: Msanzdelrio/ResourceModules.wiki
+      name: Msanzdelrio/ResourceModules
 
 trigger:
   branches:
