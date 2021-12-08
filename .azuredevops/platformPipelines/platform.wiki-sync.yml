@@ -28,6 +28,6 @@ jobs:
       - checkout: self
         displayName: Checkout Source Repo
         persistCredentials: true
-      - checkout: $(wikiRepository)
+      - checkout: '$(wikiRepository)'
         displayName: Checkout Wiki Repo
         persistCredentials: true
