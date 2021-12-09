@@ -50,8 +50,6 @@ jobs:
             $wikiRepository = Join-Path '$(System.DefaultWorkingDirectory)' $wikiPath
             rsync -avzr --delete --exclude='.git/' $docsPath $wikiRepository
             cd $wikiRepository
-            git remote set-url origin $('https://' + '$(PAT)' + '@github.com/' + '$(Build.Repository.Name)' + '.wiki')
             git add .
             git commit -m "Push updated Wiki"
             git push
-            git push $(Build.Repository.Uri) HEAD:$(Build.SourceBranch)
