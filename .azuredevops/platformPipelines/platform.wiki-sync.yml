@@ -16,6 +16,7 @@ trigger:
       - 'docs/wiki/**'
 
 variables:
+  - group: 'test'
   - template: '/.azuredevops/pipelineVariables/global.variables.yml'
   - name: pipelinePrincipalGitUserName
     value: 'CARMLPipelinePrincipal'
@@ -43,9 +44,17 @@ jobs:
           targetType: inline
           pwsh: true
           script: |
-            $wikiRepository = '$(Build.Repository.Uri)' + '.wiki'
-            Write-Verbose $wikiRepository -Verbose
-            echo "##vso[task.setvariable variable=wikiRepositoryVar;isOutput=true]$wikiRepository" # remember to use double quotes
-      - checkout: MyGitHubRepo
-        displayName: Checkout Source Repo
-        persistCredentials: true
+            # $wikiRepository = '$(Build.Repository.Uri)' + '.wiki'
+            # Write-Verbose $wikiRepository -Verbose
+            # echo "##vso[task.setvariable variable=wikiRepositoryVar;isOutput=true]$wikiRepository" # remember to use double quotes
+
+
+            git config --global user.email '$(pipelinePrincipalGitUserEmail)'
+            git config --global user.name '$(pipelinePrincipalGitUserName)'
+            $repositoryEndpoint= 'https://' + '$(PAT)' + '@github.com/' + '$(Build.Repository.Name)' + '.wiki'
+            Write-Verbose $repositoryEndpoint -Verbose
+            git clone https://{yourPAT}@dev.azure.com/yourOrgName/yourProjectName/_git/yourRepoName
+            # Write-Verbose '$(Build.SourceBranch)' -Verbose
+            # git add .
+            # git commit -m "Push updated Readme file(s)"
+            # git push $(Build.Repository.Uri) HEAD:$(Build.SourceBranch)
