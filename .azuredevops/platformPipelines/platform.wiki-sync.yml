@@ -1,3 +1,7 @@
+# NOTE:
+# This pipeline requires a secret 'PAT' set up in a library named 'PLATFORM_REPO_VARIABLES'.
+# The secret's value should be a PAT token with the permissions to push to the repository's main branch.
+
 name: '.Platform: Sync Docs/Wiki'
 
 trigger:
@@ -9,7 +13,7 @@ trigger:
       - 'docs/wiki/**'
 
 variables:
-  - group: 'test'
+  - group: 'PLATFORM_REPO_VARIABLES'
   - template: '/.azuredevops/pipelineVariables/global.variables.yml'
   - name: pipelinePrincipalGitUserName
     value: 'CARMLPipelinePrincipal'
