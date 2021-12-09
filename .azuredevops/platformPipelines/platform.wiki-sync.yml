@@ -46,7 +46,8 @@ jobs:
             git config --global user.name '$(pipelinePrincipalGitUserName)'
             $repositoryEndpoint= 'https://' + '$(PAT)' + '@github.com/' + '$(Build.Repository.Name)' + '.wiki'
             Write-Verbose $repositoryEndpoint -Verbose
-            git clone https://{yourPAT}@dev.azure.com/yourOrgName/yourProjectName/_git/yourRepoName
+            git clone $repositoryEndpoint
+            dir
             # Write-Verbose '$(Build.SourceBranch)' -Verbose
             # git add .
             # git commit -m "Push updated Readme file(s)"
