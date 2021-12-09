@@ -46,8 +46,11 @@ jobs:
           pwsh: true
           script: |
             $docsPath = Join-Path '$(System.DefaultWorkingDirectory)' 'docs' 'wiki'
-            Write-Verbose 'Docs path: $docsPath' -Verbose
+            Write-Verbose 'Docs path: $($docsPath)' -Verbose
             $wikiPath = '$(Build.Repository.Name)' + '.wiki'
-            Write-Verbose 'Wiki path: $wikiPath' -Verbose
+            Write-Verbose 'Wiki path: $($wikiPath)' -Verbose
             $wikiRepository = Join-Path '$(System.DefaultWorkingDirectory)' $wikiPath
             rsync -avzr --delete --exclude='.git/' $docsPath $wikiRepository
+            cd $wikiRepository
+            git add .
+            git commit -m "Push updated Wiki"
