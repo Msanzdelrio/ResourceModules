@@ -15,8 +15,6 @@ variables:
     value: 'CARMLPipelinePrincipal'
   - name: pipelinePrincipalGitUserEmail
     value: 'CARML@noreply.github.com'
-  - name: wikiRepository
-    value: '$(Build.Repository.Uri).wiki'
 
 jobs:
   - job: Update_module_tables
@@ -32,7 +30,6 @@ jobs:
       # Create a variable
       - task: PowerShell@2
         displayName: 'Checkout Wiki Repo'
-        name: setvarStep
         inputs:
           targetType: inline
           pwsh: true
@@ -42,17 +39,15 @@ jobs:
             $repositoryEndpoint= 'https://' + '$(PAT)' + '@github.com/' + '$(Build.Repository.Name)' + '.wiki'
             Write-Verbose $repositoryEndpoint -Verbose
             git clone $repositoryEndpoint
-            ls
-            cd '$(System.DefaultWorkingDirectory)'
-            ls
-
-      # - task: PowerShell@2
-      #   displayName: 'Sync docs/wiki Into Wiki Repo'
-      #   name: setvarStep
-      #   inputs:
-      #     targetType: inline
-      #     pwsh: true
-      #     script: |
-      #       $docsPath = Join-Path '$(System.DefaultWorkingDirectory)' 'docs' 'wiki'
-      #       $wikiRepo = Join-Path '$(System.DefaultWorkingDirectory)' '$(Build.Repository.Name)' '.wiki'
-      #       rsync -avzr --delete --exclude='.git/' $docsPath "${{ env.wiki_target_repo }}"
+      - task: PowerShell@2
+        displayName: 'Sync docs/wiki Into Wiki Repo'
+        inputs:
+          targetType: inline
+          pwsh: true
+          script: |
+            $docsPath = Join-Path '$(System.DefaultWorkingDirectory)' 'docs' 'wiki'
+            Write-Verbose 'Docs path: $docsPath' -Verbose
+            $wikiPath = '$(Build.Repository.Name)' + '.wiki'
+            Write-Verbose 'Wiki path: $wikiPath' -Verbose
+            $wikiRepository = Join-Path '$(System.DefaultWorkingDirectory)' $wikiPath
+            rsync -avzr --delete --exclude='.git/' $docsPath $wikiRepository
