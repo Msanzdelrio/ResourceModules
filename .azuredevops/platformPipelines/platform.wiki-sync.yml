@@ -48,7 +48,8 @@ jobs:
             ls
             $docsPath = Join-Path '$(System.DefaultWorkingDirectory)' 'docs' 'wiki'
             Write-Verbose $docsPath -Verbose
-            $wikiPath = '$(Build.Repository.Name)' + '.wiki'
+            $repositoryName = ('$(Build.Repository.Name)').split('/')[1]
+            $wikiPath = $repositoryName + '.wiki'
             Write-Verbose $wikiPath -Verbose
             $wikiRepository = Join-Path '$(System.DefaultWorkingDirectory)' $wikiPath
             Write-Verbose $wikiRepository -Verbose
