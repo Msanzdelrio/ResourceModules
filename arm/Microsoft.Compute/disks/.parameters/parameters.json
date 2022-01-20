@@ -7,16 +7,6 @@
         },
         "sku": {
             "value": "Standard_LRS"
-        },
-        "roleAssignments": {
-            "value": [
-                {
-                    "roleDefinitionIdOrName": "Reader",
-                    "principalIds": [
-                        "<<deploymentSpId>>"
-                    ]
-                }
-            ]
         }
     }
 }
