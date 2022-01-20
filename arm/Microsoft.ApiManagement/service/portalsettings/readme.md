@@ -6,7 +6,7 @@ This module deploys API Management Service Portal Setting.
 
 | Resource Type | API Version |
 | :-- | :-- |
-| `Microsoft.ApiManagement/service/portalsettings` | 2019-12-01 |
+| `Microsoft.ApiManagement/service/portalsettings` | 2021-08-01 |
 
 ## Parameters
 
@@ -27,4 +27,4 @@ This module deploys API Management Service Portal Setting.
 
 ## Template references
 
-- [Service/Portalsettings](https://docs.microsoft.com/en-us/azure/templates/Microsoft.ApiManagement/2019-12-01/service/portalsettings)
+- ['service/portalsettings' Parent Documentation](https://docs.microsoft.com/en-us/azure/templates/Microsoft.ApiManagement/service)

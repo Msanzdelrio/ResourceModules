@@ -6,7 +6,7 @@ This module deploys an Automanage account and associates VM with it.
 
 | Resource Type | API Version |
 | :-- | :-- |
-| `Microsoft.Authorization/roleAssignments` | 2020-04-01-preview |
+| `Microsoft.Authorization/roleAssignments` | 2021-04-01-preview |
 | `Microsoft.Automanage/accounts` | 2020-06-30-preview |
 | `Microsoft.Compute/virtualMachines/providers/configurationProfileAssignments` | 2020-06-30-preview |
 
@@ -32,5 +32,5 @@ This module deploys an Automanage account and associates VM with it.
 
 ## Template references
 
-- [Roleassignments](https://docs.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2020-04-01-preview/roleAssignments)
-- [Accounts](https://docs.microsoft.com/en-us/azure/templates/Microsoft.Automanage/2020-06-30-preview/accounts)
+- [Define resources with Bicep and ARM templates](https://docs.microsoft.com/en-us/azure/templates)
+- [Roleassignments](https://docs.microsoft.com/en-us/azure/templates/Microsoft.Authorization/2021-04-01-preview/roleAssignments)
